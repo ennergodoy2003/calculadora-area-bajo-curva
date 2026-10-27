@@ -1,0 +1,245 @@
+/* ---------- VARIABLES DE COLOR ---------- */
+:root {
+           --color-principal: #000e38;
+    --color-principal-oscuro: #041751;
+    --color-fondo: #f1f5f9;
+    --color-tarjeta: #ffffff;
+    --color-texto: #1e293b;
+    --color-suave: #64748b;
+    --color-error: #dc2626;
+    --color-error-fondo: #fee2e2;
+}
+
+/* ---------- BASE ---------- */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.6;
+}
+
+.contenedor {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 16px;
+}
+
+/* ---------- ENCABEZADO ---------- */
+.encabezado {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.encabezado h1 {
+    margin: 0;
+    color: var(--color-principal);
+}
+
+.encabezado p {
+    margin: 8px 0 0;
+    color: var(--color-suave);
+}
+
+/* ---------- TARJETAS ---------- */
+.tarjeta {
+    background-color: var(--color-tarjeta);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.tarjeta h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--color-fondo);
+    padding-bottom: 8px;
+}
+
+/* ---------- FORMULARIO ---------- */
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.campo label {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+input {
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.25);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background-color: var(--color-principal);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--color-principal-oscuro);
+}
+
+/* ---------- MENSAJES ---------- */
+.alerta-error {
+    background-color: var(--color-error-fondo);
+    color: var(--color-error);
+    border-left: 4px solid var(--color-error);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.alerta-info {
+    background-color: #e0ecff;
+    color: #0047b3;
+    border-left: 4px solid var(--color-principal);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.alerta-aviso {
+    background-color: #e2e8f0;
+    color: #111111;
+    border-left: 4px solid #64748b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+/* ---------- PROCEDIMIENTO ---------- */
+.paso {
+    margin-bottom: 16px;
+}
+
+.paso-titulo {
+    font-weight: 600;
+    color: var(--color-principal);
+    margin: 0;
+}
+
+.formula {
+    overflow-x: auto;
+}
+
+/* ---------- RESUMEN ---------- */
+.resumen-item {
+    text-align: center;
+    background-color: var(--color-fondo);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.resumen-item p {
+    margin: 0;
+    color: var(--color-suave);
+}
+
+.resumen-item .numero {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-principal);
+}
+
+/* ---------- AYUDA ---------- */
+.ayuda summary {
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-principal);
+}
+
+.ayuda table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.ayuda th,
+.ayuda td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid var(--color-fondo);
+}
+
+code {
+    background-color: var(--color-fondo);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: Consolas, monospace;
+}
+
+/* ---------- GRÁFICA ---------- */
+#grafica {
+    width: 100%;
+}
+
+#grafica svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+#grafica text {
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.nota {
+    font-size: 14px;
+    color: var(--color-suave);
+    margin-top: 0;
+}
+
+/* ---------- PIE DE PÁGINA ---------- */
+.pie {
+    text-align: center;
+    padding: 24px 16px 32px;
+    border-top: 1px solid #cbd5e1;
+    color: var(--color-suave);
+    font-size: 14px;
+}
+
+.pie p {
+    margin: 4px 0;
+}
+
+.pie .pie-nombre {
+    font-weight: 600;
+    color: var(--color-principal);
+    font-size: 15px;
+}
+
+/* ---------- CELULAR ---------- */
+@media (max-width: 600px) {
+    .fila {
+        grid-template-columns: 1fr;
+    }
+}

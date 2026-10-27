@@ -1,0 +1,1 @@
+from .integral import resolver_integral

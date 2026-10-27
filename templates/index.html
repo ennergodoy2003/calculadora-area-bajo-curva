@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Área Bajo la Curva</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+
+    <!-- Hoja de estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- MathJax: convierte LaTeX en fórmulas matemáticas -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <h1>📐 Calculadora de Área Bajo la Curva</h1>
+            <p>Calcula el área bajo una función f(x) en un intervalo [a, b].</p>
+        </header>
+
+        <form method="POST" class="tarjeta">
+            <div class="campo">
+                <label for="funcion">Función f(x):</label>
+                <input type="text" id="funcion" name="funcion" value="{{ datos.funcion }}" required>
+            </div>
+
+            <div class="fila">
+                <div class="campo">
+                    <label for="a">Límite inferior (a):</label>
+                    <input type="number" id="a" name="a" value="{{ datos.a }}" step="any" required>
+                </div>
+                <div class="campo">
+                    <label for="b">Límite superior (b):</label>
+                    <input type="number" id="b" name="b" value="{{ datos.b }}" step="any" required>
+                </div>
+            </div>
+
+            <button type="submit">Calcular área</button>
+        </form>
+
+        <details class="tarjeta ayuda">
+            <summary>📘 ¿Cómo escribir las funciones?</summary>
+            <table>
+                <tr><th>Matemática</th><th>Se escribe</th></tr>
+                <tr><td>x²</td><td><code>x**2</code> o <code>x^2</code></td></tr>
+                <tr><td>3x</td><td><code>3*x</code></td></tr>
+                <tr><td>√x</td><td><code>sqrt(x)</code></td></tr>
+                <tr><td>eˣ</td><td><code>exp(x)</code></td></tr>
+                <tr><td>ln x</td><td><code>log(x)</code></td></tr>
+                <tr><td>sen x</td><td><code>sin(x)</code></td></tr>
+                <tr><td>cos x</td><td><code>cos(x)</code></td></tr>
+                <tr><td>π</td><td><code>pi</code></td></tr>
+            </table>
+            <p><strong>Ejemplos para probar:</strong> <code>2</code> de 0 a 2 · <code>x</code> de 0 a 4 · <code>x**2</code> de 0 a 2 · <code>x**2 - 4</code> de 0 a 3</p>
+        </details>
+
+        {% if error %}
+            <div class="alerta-error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if resultado %}
+
+            <!-- 1. PROCEDIMIENTO -->
+            <section class="tarjeta">
+                <h2>1. Procedimiento</h2>
+
+                <div class="paso">
+                    <p class="paso-titulo">Paso 1: La función a integrar</p>
+                    <div class="formula">\[ f(x) = {{ resultado.f }} \]</div>
+                </div>
+
+                <div class="paso">
+                    <p class="paso-titulo">Paso 2: Se obtiene la antiderivada</p>
+                    <div class="formula">\[ F(x) = {{ resultado.F }} \]</div>
+                </div>
+
+                <div class="paso">
+                    <p class="paso-titulo">Paso 3: Teorema Fundamental del Cálculo, F(b) − F(a)</p>
+                    <div class="formula">\[ \int_{ {{ resultado.a }} }^{ {{ resultado.b }} } {{ resultado.f }} \, dx
+                        = F({{ resultado.b }}) - F({{ resultado.a }})
+                        = {{ resultado.F_b }} - \left( {{ resultado.F_a }} \right)
+                        = {{ resultado.neta }} \]</div>
+                </div>
+            </section>
+
+            <!-- 2. ÁREA TOTAL -->
+            <section class="tarjeta">
+                <h2>2. Área total (valor absoluto)</h2>
+
+                {% if resultado.numerico %}
+                    <div class="alerta-aviso">
+                        No pude encontrar con exactitud dónde la función cruza el eje x;
+                        el área total se calculó numéricamente.
+                    </div>
+                {% elif not resultado.hay_cortes %}
+                    <p>La función no cruza el eje x en el intervalo, así que no hay que partirlo.</p>
+                {% else %}
+                    <p>La función cruza el eje x en:</p>
+                    <div class="formula">\[ x = {{ resultado.cortes }} \]</div>
+
+                    <p>Se integra cada tramo y se toma su valor absoluto:</p>
+                    {% for t in resultado.tramos %}
+                        <div class="formula">\[ \int_{ {{ t.desde }} }^{ {{ t.hasta }} } f(x)\, dx
+                            = {{ t.valor }} \;\Rightarrow\; \left| {{ t.valor }} \right| = {{ t.absoluto }} \]</div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="formula">\[ \text{Área total} = {{ resultado.area_total }} \]</div>
+            </section>
+
+            <!-- 3. RESUMEN -->
+            <section class="tarjeta">
+                <h2>3. Resumen</h2>
+                <div class="fila">
+                    <div class="resumen-item">
+                        <p>Integral definida (neta)</p>
+                        <p class="numero">{{ resultado.neta_decimal }}</p>
+                    </div>
+                    <div class="resumen-item">
+                        <p>Área total</p>
+                        <p class="numero">{{ resultado.area_decimal }}</p>
+                    </div>
+                </div>
+
+                {% if resultado.son_distintos %}
+                    <div class="alerta-info">
+                        Son distintos porque parte de la función está debajo del eje x:
+                        la integral resta esa parte, pero el área geométrica siempre es positiva.
+                    </div>
+                {% endif %}
+            </section>
+
+            <!-- 4. GRÁFICA PROPIA (SVG) -->
+            <section class="tarjeta">
+                <h2>4. Gráfica</h2>
+                <p class="nota" id="info-cuadros"></p>
+                <div id="grafica"></div>
+            </section>
+
+            <script>
+            (function () {
+                // Datos que envió Python, convertidos a JSON por Jinja
+                const d = {{ resultado.grafica | tojson }};
+                const areaTotal = {{ resultado.area_decimal }};
+                const cont = document.getElementById("grafica");
+
+                // ---------- Márgenes (el izquierdo crece si los números de y son largos) ----------
+                const pad = 30;
+                const mayorY = Math.max(Math.abs(d.y_min), Math.abs(d.y_max));
+                const digitos = String(Math.round(mayorY)).length + (d.y_min < 0 ? 1 : 0);
+                const padIzq = Math.max(pad, digitos * 8 + 18);
+
+                // ---------- Elegir el tamaño de cuadro ----------
+                const anchoUtil = Math.max(cont.clientWidth, 300) - padIzq - pad;
+                const altoUtil = 640 - 2 * pad;
+                const celdaMin = 28;     // tamaño mínimo de un cuadro en píxeles
+                const celdaMax = 60;     // tamaño máximo de un cuadro en píxeles
+                const pasos = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+                const ultimo = pasos.length - 1;
+                const rango = (min, max, paso) => [Math.floor(min / paso) * paso, Math.ceil(max / paso) * paso];
+
+                let ix = 0, iy = 0;
+                let pasoX, pasoY, xMin, xMax, yMin, yMax, celda;
+                while (true) {
+                    pasoX = pasos[ix];
+                    pasoY = pasos[iy];
+                    [xMin, xMax] = rango(d.x_min, d.x_max, pasoX);
+                    [yMin, yMax] = rango(d.y_min, d.y_max, pasoY);
+
+                    const columnas = (xMax - xMin) / pasoX;
+                    const filas = (yMax - yMin) / pasoY;
+                    const porAncho = anchoUtil / columnas;
+                    const porAlto = altoUtil / filas;
+                    celda = Math.min(celdaMax, porAncho, porAlto);
+
+                    // Si ya no son cuadros de 1, evitar que la gráfica quede muy alta o muy ancha
+                    const muyAlta = pasoY > 1 && filas > Math.max(columnas * 1.5, 8);
+                    const muyAncha = pasoX > 1 && columnas > Math.max(filas * 1.5, 8);
+
+                    if ((celda >= celdaMin && !muyAlta && !muyAncha) || (ix === ultimo && iy === ultimo)) break;
+
+                    let avanzarX;
+                    if (muyAlta) avanzarX = false;
+                    else if (muyAncha) avanzarX = true;
+                    else avanzarX = porAncho < porAlto;
+
+                    if (avanzarX && ix < ultimo) ix++;
+                    else if (iy < ultimo) iy++;
+                    else ix++;
+                }
+
+                // Cada cuadro mide "celda" píxeles en pantalla, en ambos ejes
+                const escalaX = celda / pasoX;
+                const escalaY = celda / pasoY;
+                const W = (xMax - xMin) * escalaX + padIzq + pad;
+                const H = (yMax - yMin) * escalaY + 2 * pad;
+                const px = (v) => padIzq + (v - xMin) * escalaX;
+                const py = (v) => pad + (yMax - v) * escalaY;
+
+                // ---------- Colores (azul encendido y blanco) ----------
+                const COLOR = {
+                    cuadro: "#cbd5e1", eje: "#0f172a", curva: "#0040ff", texto: "#475569",
+                    limite: "#64748b", positiva: "rgba(34, 197, 94, 0.40)", negativa: "rgba(239, 68, 68, 0.40)",
+                    fondoCaja: "#ffffff", bordeCaja: "#cbd5e1", textoCaja: "#0f172a"
+                };
+
+                let s = "";
+
+                // ---------- Cuadrícula ----------
+                for (let v = xMin; v <= xMax + 1e-9; v += pasoX) {
+                    s += `<line x1="${px(v)}" y1="${py(yMax)}" x2="${px(v)}" y2="${py(yMin)}" stroke="${COLOR.cuadro}" stroke-width="1"/>`;
+                }
+                for (let v = yMin; v <= yMax + 1e-9; v += pasoY) {
+                    s += `<line x1="${px(xMin)}" y1="${py(v)}" x2="${px(xMax)}" y2="${py(v)}" stroke="${COLOR.cuadro}" stroke-width="1"/>`;
+                }
+
+                // ---------- Área sombreada (verde arriba, roja abajo) ----------
+                const caminoArea = (signo) => {
+                    let c = `M${px(d.a)},${py(0)}`;
+                    d.x_area.forEach((xv, i) => {
+                        let yv = d.y_area[i] ?? 0;
+                        yv = signo > 0 ? Math.max(yv, 0) : Math.min(yv, 0);
+                        c += ` L${px(xv).toFixed(2)},${py(yv).toFixed(2)}`;
+                    });
+                    return c + ` L${px(d.b)},${py(0)} Z`;
+                };
+                s += `<path d="${caminoArea(1)}" fill="${COLOR.positiva}"/>`;
+                s += `<path d="${caminoArea(-1)}" fill="${COLOR.negativa}"/>`;
+
+                // ---------- Líneas de los límites a y b ----------
+                [d.a, d.b].forEach((v) => {
+                    s += `<line x1="${px(v)}" y1="${py(yMax)}" x2="${px(v)}" y2="${py(yMin)}" stroke="${COLOR.limite}" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+                });
+
+                // ---------- Curva (se corta donde la función no existe) ----------
+                const alto = yMax - yMin;
+                let curva = "";
+                let dibujando = false;
+                d.x_curva.forEach((xv, i) => {
+                    const yv = d.y_curva[i];
+                    if (yv === null) { dibujando = false; return; }
+                    const yc = Math.max(Math.min(yv, yMax + alto), yMin - alto);
+                    curva += (dibujando ? " L" : " M") + px(xv).toFixed(2) + "," + py(yc).toFixed(2);
+                    dibujando = true;
+                });
+                s += `<path d="${curva}" fill="none" stroke="${COLOR.curva}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+                // Todo lo anterior se recorta al área de la cuadrícula
+                const recorte = `<clipPath id="recorte"><rect x="${px(xMin)}" y="${py(yMax)}" width="${(xMax - xMin) * escalaX}" height="${(yMax - yMin) * escalaY}"/></clipPath>`;
+                let svg = `<g clip-path="url(#recorte)">${s}</g>`;
+
+                // ---------- Ejes con flechas (se cruzan en el origen) ----------
+                svg += `<line x1="${px(xMin) - 14}" y1="${py(0)}" x2="${px(xMax) + 14}" y2="${py(0)}" stroke="${COLOR.eje}" stroke-width="1.8" marker-start="url(#flecha)" marker-end="url(#flecha)"/>`;
+                svg += `<line x1="${px(0)}" y1="${py(yMin) + 14}" x2="${px(0)}" y2="${py(yMax) - 14}" stroke="${COLOR.eje}" stroke-width="1.8" marker-start="url(#flecha)" marker-end="url(#flecha)"/>`;
+                svg += `<text x="${W - 8}" y="${py(0) - 8}" text-anchor="end" font-style="italic" font-size="15" fill="${COLOR.eje}">x</text>`;
+                svg += `<text x="${px(0) + 8}" y="14" font-style="italic" font-size="15" fill="${COLOR.eje}">y</text>`;
+
+                // ---------- Números sobre los ejes (sin los de las orillas) ----------
+                for (let v = xMin; v <= xMax + 1e-9; v += pasoX) {
+                    if (v === 0 || v === xMin || v === xMax) continue;
+                    svg += `<line x1="${px(v)}" y1="${py(0) - 4}" x2="${px(v)}" y2="${py(0) + 4}" stroke="${COLOR.eje}" stroke-width="1.5"/>`;
+                    svg += `<text x="${px(v)}" y="${py(0) + 18}" text-anchor="middle" font-size="12" fill="${COLOR.texto}">${v}</text>`;
+                }
+                for (let v = yMin; v <= yMax + 1e-9; v += pasoY) {
+                    if (v === 0 || v === yMin || v === yMax) continue;
+                    svg += `<line x1="${px(0) - 4}" y1="${py(v)}" x2="${px(0) + 4}" y2="${py(v)}" stroke="${COLOR.eje}" stroke-width="1.5"/>`;
+                    svg += `<text x="${px(0) - 8}" y="${py(v) + 4}" text-anchor="end" font-size="12" fill="${COLOR.texto}">${v}</text>`;
+                }
+                svg += `<text x="${px(0) - 8}" y="${py(0) + 18}" text-anchor="end" font-size="12" fill="${COLOR.texto}">0</text>`;
+
+                // ---------- Elementos del hover ----------
+                svg += `<g id="hover" visibility="hidden">
+                            <circle id="punto" r="5" fill="${COLOR.curva}" stroke="${COLOR.fondoCaja}" stroke-width="2"/>
+                            <rect id="caja" rx="6" fill="${COLOR.fondoCaja}" stroke="${COLOR.bordeCaja}"/>
+                            <text id="etiqueta" font-size="13" fill="${COLOR.textoCaja}"></text>
+                        </g>`;
+
+                const flecha = `<marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${COLOR.eje}"/></marker>`;
+
+                cont.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><defs>${flecha}${recorte}</defs>${svg}</svg>`;
+
+                // ---------- Información de los cuadros ----------
+                const areaCuadro = pasoX * pasoY;
+                let info = `🟩 Cada cuadro = <strong>${pasoX} × ${pasoY} = ${areaCuadro} u²</strong> · ` +
+                           `El área total ocupa <strong>≈ ${(areaTotal / areaCuadro).toFixed(2)} cuadros</strong>`;
+                if (pasoX !== pasoY) {
+                    info += `<br>Los cuadros se ven iguales, pero en el eje x cada uno avanza ${pasoX} y en el eje y avanza ${pasoY}.`;
+                }
+                document.getElementById("info-cuadros").innerHTML = info;
+
+                // ---------- Hover: mostrar x y f(x) sobre la curva ----------
+                const lienzo = cont.querySelector("svg");
+                const grupo = lienzo.querySelector("#hover");
+                const punto = lienzo.querySelector("#punto");
+                const caja = lienzo.querySelector("#caja");
+                const etiqueta = lienzo.querySelector("#etiqueta");
+
+                lienzo.addEventListener("mousemove", (e) => {
+                    const r = lienzo.getBoundingClientRect();
+                    const sx = (e.clientX - r.left) * (W / r.width);
+                    const xv = xMin + (sx - padIzq) / escalaX;
+                    const n = d.x_curva.length;
+                    const i = Math.round(((xv - d.x_min) / (d.x_max - d.x_min)) * (n - 1));
+                    const Y = d.y_curva[i];
+
+                    if (i < 0 || i >= n || Y === null || Y === undefined || Y > yMax || Y < yMin) {
+                        grupo.setAttribute("visibility", "hidden");
+                        return;
+                    }
+
+                    const X = d.x_curva[i];
+                    punto.setAttribute("cx", px(X));
+                    punto.setAttribute("cy", py(Y));
+
+                    etiqueta.textContent = `x = ${X.toFixed(2)}   f(x) = ${Y.toFixed(2)}`;
+                    let tx = px(X) + 12;
+                    const ty = Math.max(py(Y) - 14, 20);
+                    const ancho = etiqueta.getComputedTextLength() + 16;
+                    if (tx + ancho > W) tx = px(X) - ancho - 12;
+                    etiqueta.setAttribute("x", tx + 8);
+                    etiqueta.setAttribute("y", ty);
+                    caja.setAttribute("x", tx);
+                    caja.setAttribute("y", ty - 16);
+                    caja.setAttribute("width", ancho);
+                    caja.setAttribute("height", 24);
+
+                    grupo.setAttribute("visibility", "visible");
+                });
+
+                lienzo.addEventListener("mouseleave", () => grupo.setAttribute("visibility", "hidden"));
+            })();
+            </script>
+
+        {% endif %}
+
+    </main>
+
+    <footer class="pie">
+        <p>Proyecto final · Cálculo 2 · 2026</p>
+        <p class="pie-nombre">Enner Osvaldo Godoy Ramírez</p>
+    </footer>
+</body>
+</html>
