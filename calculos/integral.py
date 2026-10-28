@@ -3,7 +3,6 @@ from .simbolos import x
 from .area import calcular_area_total
 from .grafica import generar_grafica
 
-
 def resolver_integral(funcion_texto, a, b):
     """Hace todo el cálculo y devuelve un diccionario listo para mostrar en el HTML."""
     f = sp.sympify(funcion_texto)

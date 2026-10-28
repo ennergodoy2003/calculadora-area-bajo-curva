@@ -16,7 +16,7 @@
     <main class="contenedor">
 
         <header class="encabezado">
-            <h1>📐 Calculadora de Área Bajo la Curva</h1>
+            <h1>Calculadora de Área Bajo la Curva</h1>
             <p>Calcula el área bajo una función f(x) en un intervalo [a, b].</p>
         </header>
 
@@ -40,18 +40,12 @@
             <button type="submit">Calcular área</button>
         </form>
 
-        <details class="tarjeta ayuda">
-            <summary>📘 ¿Cómo escribir las funciones?</summary>
+               <details class="tarjeta ayuda">
+            <summary> ¿Cómo escribir las funciones?</summary>
             <table>
                 <tr><th>Matemática</th><th>Se escribe</th></tr>
                 <tr><td>x²</td><td><code>x**2</code> o <code>x^2</code></td></tr>
                 <tr><td>3x</td><td><code>3*x</code></td></tr>
-                <tr><td>√x</td><td><code>sqrt(x)</code></td></tr>
-                <tr><td>eˣ</td><td><code>exp(x)</code></td></tr>
-                <tr><td>ln x</td><td><code>log(x)</code></td></tr>
-                <tr><td>sen x</td><td><code>sin(x)</code></td></tr>
-                <tr><td>cos x</td><td><code>cos(x)</code></td></tr>
-                <tr><td>π</td><td><code>pi</code></td></tr>
             </table>
             <p><strong>Ejemplos para probar:</strong> <code>2</code> de 0 a 2 · <code>x</code> de 0 a 4 · <code>x**2</code> de 0 a 2 · <code>x**2 - 4</code> de 0 a 3</p>
         </details>
@@ -141,11 +135,16 @@
                 <div id="grafica"></div>
             </section>
 
+            <!-- Datos de la gráfica enviados por Python (solo datos, no se ejecuta) -->
+            <script type="application/json" id="datos-grafica">{{ {"grafica": resultado.grafica, "area": resultado.area_decimal} | tojson }}</script>
+
+            <!-- Código que dibuja la gráfica -->
             <script>
             (function () {
-                // Datos que envió Python, convertidos a JSON por Jinja
-                const d = {{ resultado.grafica | tojson }};
-                const areaTotal = {{ resultado.area_decimal }};
+                // Datos que envió Python, leídos desde la etiqueta JSON
+                const datosJSON = JSON.parse(document.getElementById("datos-grafica").textContent);
+                const d = datosJSON.grafica;
+                const areaTotal = Number(datosJSON.area);
                 const cont = document.getElementById("grafica");
 
                 // ---------- Márgenes (el izquierdo crece si los números de y son largos) ----------
